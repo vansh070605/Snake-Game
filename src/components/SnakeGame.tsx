@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, Play, Pause } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, Play, Pause, Trophy, Zap } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -65,7 +65,7 @@ export const SnakeGame = () => {
       if (head.x < 0 || head.x >= GRID_SIZE || head.y < 0 || head.y >= GRID_SIZE) {
         setGameOver(true);
         setGameRunning(false);
-        toast({ title: "Game Over!", description: `Final Score: ${score}` });
+        toast({ title: "💀 Game Over!", description: `Final Score: ${score}` });
         return currentSnake;
       }
 
@@ -73,7 +73,7 @@ export const SnakeGame = () => {
       if (newSnake.some(segment => segment.x === head.x && segment.y === head.y)) {
         setGameOver(true);
         setGameRunning(false);
-        toast({ title: "Game Over!", description: `Final Score: ${score}` });
+        toast({ title: "💀 Game Over!", description: `Final Score: ${score}` });
         return currentSnake;
       }
 
@@ -86,11 +86,13 @@ export const SnakeGame = () => {
           if (newScore > highScore) {
             setHighScore(newScore);
             localStorage.setItem('snake-high-score', newScore.toString());
+            toast({ title: "🎉 New High Score!", description: `${newScore} points!` });
+          } else {
+            toast({ title: "🍎 Delicious! +10 points" });
           }
           return newScore;
         });
         setFood(generateFood(newSnake));
-        toast({ title: "Food eaten! +10 points" });
       } else {
         newSnake.pop();
       }
@@ -122,12 +124,12 @@ export const SnakeGame = () => {
     setScore(0);
     setGameOver(false);
     setGameRunning(true);
-    toast({ title: "Game Started!" });
+    toast({ title: "🎮 Game Started! Let's go!" });
   };
 
   const pauseGame = () => {
     setGameRunning(!gameRunning);
-    toast({ title: gameRunning ? "Game Paused" : "Game Resumed" });
+    toast({ title: gameRunning ? "⏸️ Game Paused" : "▶️ Game Resumed" });
   };
 
   const resetGame = () => {
@@ -137,7 +139,7 @@ export const SnakeGame = () => {
     setScore(0);
     setGameOver(false);
     setGameRunning(false);
-    toast({ title: "Game Reset" });
+    toast({ title: "🔄 Game Reset" });
   };
 
   // Game loop
@@ -219,66 +221,134 @@ export const SnakeGame = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 p-4 min-h-screen bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-foreground mb-2">Snake Game</h1>
-        <div className="flex justify-center gap-8 text-sm text-muted-foreground">
-          <span>Score: {score}</span>
-          <span>High Score: {highScore}</span>
+    <div className="flex flex-col items-center gap-8 p-6 min-h-screen bg-gradient-to-br from-background via-background to-muted/20 animate-fade-in">
+      {/* Header */}
+      <div className="text-center space-y-4">
+        <div className="relative">
+          <h1 className="text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent drop-shadow-lg">
+            SNAKE
+          </h1>
+          <div className="absolute -top-2 -right-2 animate-glow-pulse">
+            <Zap className="w-8 h-8 text-primary" />
+          </div>
+        </div>
+        
+        {/* Score Display */}
+        <div className="flex justify-center gap-8">
+          <Card className="px-6 py-3 bg-gradient-card border-game-border shadow-glow-primary">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{score}</div>
+              <div className="text-sm text-muted-foreground">Score</div>
+            </div>
+          </Card>
+          <Card className="px-6 py-3 bg-gradient-card border-game-border shadow-glow-primary">
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1">
+                <Trophy className="w-5 h-5 text-primary" />
+                <div className="text-2xl font-bold text-primary">{highScore}</div>
+              </div>
+              <div className="text-sm text-muted-foreground">Best</div>
+            </div>
+          </Card>
         </div>
       </div>
 
-      <Card className="p-6 bg-card border-border">
+      {/* Game Board */}
+      <Card className="p-8 bg-gradient-card border-2 border-game-border shadow-2xl shadow-primary/20 animate-scale-in">
         <div
           ref={gameRef}
-          className="relative bg-muted/20 border-2 border-border rounded-lg"
+          className="relative bg-gradient-game-bg border-2 border-game-border rounded-xl overflow-hidden"
           style={{
-            width: GRID_SIZE * 16,
-            height: GRID_SIZE * 16,
+            width: GRID_SIZE * 20,
+            height: GRID_SIZE * 20,
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Game Grid */}
+          {/* Subtle Grid Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            {Array.from({ length: GRID_SIZE }).map((_, i) => (
+              <div key={`row-${i}`}>
+                {Array.from({ length: GRID_SIZE }).map((_, j) => (
+                  <div
+                    key={`cell-${i}-${j}`}
+                    className="absolute border-grid-line border-[0.5px]"
+                    style={{
+                      left: j * 20,
+                      top: i * 20,
+                      width: 20,
+                      height: 20,
+                    }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Game Elements */}
           <div className="absolute inset-0">
             {/* Snake */}
             {snake.map((segment, index) => (
               <div
                 key={index}
-                className={`absolute transition-all duration-75 ${
+                className={`absolute transition-all duration-100 ${
                   index === 0
-                    ? 'bg-primary border-2 border-primary-foreground rounded-sm'
-                    : 'bg-primary/80 rounded-sm'
+                    ? 'bg-snake-head border-2 border-primary-foreground rounded-lg shadow-glow-primary animate-glow-pulse'
+                    : 'bg-snake-body rounded-md shadow-lg'
                 }`}
                 style={{
-                  left: segment.x * 16,
-                  top: segment.y * 16,
+                  left: segment.x * 20 + 2,
+                  top: segment.y * 20 + 2,
                   width: 16,
                   height: 16,
+                  zIndex: 10,
                 }}
               />
             ))}
 
             {/* Food */}
             <div
-              className="absolute bg-destructive rounded-full animate-pulse"
+              className="absolute bg-food rounded-full shadow-glow-food animate-food-bounce border-2 border-destructive-foreground"
               style={{
-                left: food.x * 16 + 2,
-                top: food.y * 16 + 2,
-                width: 12,
-                height: 12,
+                left: food.x * 20 + 3,
+                top: food.y * 20 + 3,
+                width: 14,
+                height: 14,
+                zIndex: 5,
               }}
             />
           </div>
 
           {/* Game Over Overlay */}
           {gameOver && (
-            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-foreground mb-2">Game Over!</h2>
-                <p className="text-muted-foreground mb-4">Score: {score}</p>
-                <Button onClick={startGame} size="sm">
+            <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center rounded-xl animate-fade-in">
+              <div className="text-center space-y-6">
+                <div className="text-6xl">💀</div>
+                <h2 className="text-4xl font-bold text-foreground">Game Over!</h2>
+                <div className="space-y-2">
+                  <p className="text-xl text-muted-foreground">Final Score: <span className="text-primary font-bold">{score}</span></p>
+                  {score === highScore && score > 0 && (
+                    <p className="text-lg text-primary font-semibold animate-glow-pulse">🎉 New High Score!</p>
+                  )}
+                </div>
+                <Button onClick={startGame} size="lg" className="bg-gradient-primary hover:bg-gradient-primary/90 shadow-glow-primary">
+                  <Play className="w-5 h-5 mr-2" />
                   Play Again
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Start Screen */}
+          {!gameRunning && !gameOver && (
+            <div className="absolute inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center rounded-xl animate-fade-in">
+              <div className="text-center space-y-6">
+                <div className="text-6xl">🐍</div>
+                <h2 className="text-4xl font-bold text-foreground">Ready to Play?</h2>
+                <p className="text-lg text-muted-foreground">Collect food and grow your snake!</p>
+                <Button onClick={startGame} size="lg" className="bg-gradient-primary hover:bg-gradient-primary/90 shadow-glow-primary">
+                  <Play className="w-5 h-5 mr-2" />
+                  Start Game
                 </Button>
               </div>
             </div>
@@ -287,73 +357,78 @@ export const SnakeGame = () => {
       </Card>
 
       {/* Controls */}
-      <div className="flex flex-col gap-4">
-        {/* Game Controls */}
-        <div className="flex justify-center gap-2">
-          {!gameRunning && !gameOver && (
-            <Button onClick={startGame} variant="default">
-              <Play className="w-4 h-4 mr-2" />
-              Start
-            </Button>
-          )}
+      <div className="flex flex-col gap-6 animate-fade-in">
+        {/* Game Control Buttons */}
+        <div className="flex justify-center gap-4">
           {gameRunning && (
-            <Button onClick={pauseGame} variant="secondary">
-              <Pause className="w-4 h-4 mr-2" />
+            <Button onClick={pauseGame} variant="secondary" size="lg" className="shadow-lg">
+              <Pause className="w-5 h-5 mr-2" />
               Pause
             </Button>
           )}
-          <Button onClick={resetGame} variant="outline">
-            <RotateCcw className="w-4 h-4 mr-2" />
+          <Button onClick={resetGame} variant="outline" size="lg" className="shadow-lg border-game-border">
+            <RotateCcw className="w-5 h-5 mr-2" />
             Reset
           </Button>
         </div>
 
         {/* Mobile Direction Controls */}
-        <div className="grid grid-cols-3 gap-2 max-w-48 mx-auto md:hidden">
+        <div className="grid grid-cols-3 gap-3 max-w-56 mx-auto md:hidden">
           <div></div>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() => handleDirectionChange('UP')}
             disabled={!gameRunning}
+            className="h-14 border-game-border shadow-lg hover:shadow-glow-primary transition-all"
           >
-            <ArrowUp className="w-4 h-4" />
+            <ArrowUp className="w-6 h-6" />
           </Button>
           <div></div>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() => handleDirectionChange('LEFT')}
             disabled={!gameRunning}
+            className="h-14 border-game-border shadow-lg hover:shadow-glow-primary transition-all"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-6 h-6" />
           </Button>
           <div></div>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() => handleDirectionChange('RIGHT')}
             disabled={!gameRunning}
+            className="h-14 border-game-border shadow-lg hover:shadow-glow-primary transition-all"
           >
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-6 h-6" />
           </Button>
           <div></div>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() => handleDirectionChange('DOWN')}
             disabled={!gameRunning}
+            className="h-14 border-game-border shadow-lg hover:shadow-glow-primary transition-all"
           >
-            <ArrowDown className="w-4 h-4" />
+            <ArrowDown className="w-6 h-6" />
           </Button>
           <div></div>
         </div>
 
         {/* Instructions */}
-        <div className="text-center text-sm text-muted-foreground max-w-md">
-          <p className="md:hidden">Swipe or use buttons to control the snake</p>
-          <p className="hidden md:block">Use arrow keys or WASD to control the snake. Press space to pause/resume.</p>
-        </div>
+        <Card className="p-6 bg-gradient-card border-game-border max-w-md mx-auto">
+          <div className="text-center space-y-2">
+            <h3 className="font-semibold text-foreground">How to Play</h3>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p className="md:hidden">🔄 Swipe or tap buttons to move</p>
+              <p className="hidden md:block">⌨️ Arrow keys, WASD, or spacebar</p>
+              <p>🍎 Eat food to grow and score points</p>
+              <p>⚠️ Don't hit walls or yourself!</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
