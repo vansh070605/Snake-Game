@@ -108,5 +108,3 @@ MIT License © 2025 [Your Name](https://github.com/your-username)
 ## ❤️ Love this project?
 
 Give it a ⭐ on GitHub and share it with your friends!
-
-```
