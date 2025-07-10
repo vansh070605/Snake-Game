@@ -3,6 +3,8 @@
 A **visually stunning**, **cyberpunk-themed Snake game** built with **React** and **Tailwind CSS**, featuring glowing animations, a sleek dark UI, mobile responsiveness, and smooth gameplay.
 
 ![Snake Game Screenshot](./screenshot.png) <!-- Add your actual screenshot file -->
+![image](https://github.com/user-attachments/assets/818453ff-3e32-42f0-950c-47abc7ed4594)
+
 
 ---
 
